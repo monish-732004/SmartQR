@@ -1,0 +1,134 @@
+@import "tailwindcss";
+
+/* This app is styled light-only by design — Tailwind classes on <body>
+   (see layout.tsx) already set background/text color. Explicitly opting
+   out of the OS dark-mode preference here stops the browser from
+   substituting its own UA colors on top, which is what made text nearly
+   invisible before: a plain `body { color: ... }` rule from the default
+   Next.js template sat outside any cascade layer, so it silently beat
+   Tailwind's (layered) text-color utilities whenever prefers-color-scheme
+   was dark — even though the classes were still applied. */
+:root {
+  color-scheme: light;
+}
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+@layer utilities {
+  /* Opacity-only on purpose: a `transform` in a fill-mode:both animation
+     computes to a non-none value for the rest of the element's life,
+     which makes it a new containing block for any position:fixed
+     descendant. Used on the root <main>, so this has to stay transform-free. */
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  .animate-fade-in {
+    animation: fade-in 0.35s ease-out both;
+  }
+
+  @keyframes fade-slide-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .animate-fade-slide-in {
+    animation: fade-slide-in 0.35s ease-out both;
+  }
+
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  .animate-pop-in {
+    animation: pop-in 0.25s ease-out both;
+  }
+
+  @keyframes soft-pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.45;
+    }
+  }
+  .animate-soft-pulse {
+    animation: soft-pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes scan-sweep {
+    0% {
+      transform: translateY(-100%);
+    }
+    100% {
+      transform: translateY(100%);
+    }
+  }
+  .animate-scan-sweep {
+    animation: scan-sweep 1.3s ease-in-out infinite;
+  }
+
+  @keyframes float-blob {
+    0%,
+    100% {
+      transform: translate(0, 0) scale(1);
+    }
+    33% {
+      transform: translate(16px, -20px) scale(1.06);
+    }
+    66% {
+      transform: translate(-14px, 14px) scale(0.96);
+    }
+  }
+  .animate-float-blob {
+    animation: float-blob 9s ease-in-out infinite;
+  }
+
+  @keyframes bob {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-8px);
+    }
+  }
+  .animate-bob {
+    animation: bob 3s ease-in-out infinite;
+  }
+
+  @keyframes flash-highlight {
+    0% {
+      background-color: rgb(253 224 71 / 0.6); /* amber-300/60 */
+    }
+    100% {
+      background-color: transparent;
+    }
+  }
+  .animate-flash-highlight {
+    animation: flash-highlight 1.4s ease-out;
+  }
+}
