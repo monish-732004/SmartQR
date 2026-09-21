@@ -2,7 +2,6 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile, isStaff } from "@/lib/auth";
-import { buildStationPath } from "@/lib/qr";
 import type { ChargingPoint, Floor } from "@/lib/types";
 import FloorPointsLive from "./FloorPointsLive";
 
@@ -36,12 +35,6 @@ export default async function FloorDetailPage({
 
   const allPoints = (points as ChargingPoint[]) ?? [];
 
-  // Each socket has its own signed QR destination (see 0012_unique_qr_per_port.sql
-  // — qr_code is now unique per port). Signing needs Node's crypto module,
-  // so it's computed here server-side and handed down as plain strings.
-  const signedPaths: Record<string, string> = {};
-  for (const p of allPoints) signedPaths[p.qr_code] = buildStationPath(p.qr_code);
-
   return (
     <div>
       <Link
@@ -69,19 +62,14 @@ export default async function FloorDetailPage({
         ) : (
           <>
             Each card is one socket, with its own QR code. The{" "}
-            <strong className="text-neutral-700">Scan</strong> button takes
-            you straight to that socket&apos;s real page — the same place
-            scanning its physical QR code would.
+            <strong className="text-neutral-700">Scan</strong> button shows
+            that socket&apos;s QR code — scan it with your phone camera to
+            get in and use it.
           </>
         )}
       </p>
 
-      <FloorPointsLive
-        floorId={floorId}
-        initialPoints={allPoints}
-        staff={staff}
-        signedPaths={signedPaths}
-      />
+      <FloorPointsLive floorId={floorId} initialPoints={allPoints} staff={staff} />
     </div>
   );
 }

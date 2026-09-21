@@ -43,12 +43,10 @@ export default function FloorPointsLive({
   floorId,
   initialPoints,
   staff = false,
-  signedPaths,
 }: {
   floorId: string;
   initialPoints: ChargingPoint[];
   staff?: boolean;
-  signedPaths: Record<string, string>;
 }) {
   const points = useRealtimeChargingPoints(initialPoints, `floor_id=eq.${floorId}`);
   const [selectedZone, setSelectedZone] = useState<string | null>(null);
@@ -113,7 +111,7 @@ export default function FloorPointsLive({
                             <OccupancyToggle point={p} />
                           ) : (
                             <Link
-                              href={signedPaths[p.qr_code] ?? "#"}
+                              href={`/scan/${encodeURIComponent(p.qr_code)}`}
                               className={`inline-flex items-center gap-1 rounded-full bg-gradient-to-r ${accent} px-3 py-1 text-xs font-medium text-white opacity-90 shadow-sm transition-all duration-150 hover:scale-105 hover:opacity-100`}
                             >
                               📷 Scan

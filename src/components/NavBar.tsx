@@ -77,6 +77,7 @@ export default async function NavBar() {
           </div>
         </div>
         <nav className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+          <NavLink href="/floors">Floors</NavLink>
           <NavLink href="/dashboard">My dashboard</NavLink>
           {staff && (
             <>

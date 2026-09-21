@@ -382,6 +382,7 @@ export default function LoginPage() {
                     <input
                       type="email"
                       required
+                      suppressHydrationWarning
                       placeholder={
                         domains ? `you${domains.split(",")[0]}` : "you@college.edu"
                       }
@@ -392,6 +393,7 @@ export default function LoginPage() {
                     <button
                       type="submit"
                       disabled={status === "sending"}
+                      suppressHydrationWarning
                       className="rounded-md bg-neutral-900 px-3 py-2.5 text-sm font-medium text-white transition-colors hover:bg-violet-700 disabled:opacity-50"
                     >
                       {status === "sending" ? "Sending link…" : "Send sign-in link →"}
@@ -408,6 +410,7 @@ export default function LoginPage() {
                   <input
                     type="text"
                     required
+                    suppressHydrationWarning
                     placeholder="Email or registration ID"
                     value={loginId}
                     onChange={(e) => setLoginId(e.target.value)}
@@ -416,6 +419,7 @@ export default function LoginPage() {
                   <input
                     type="password"
                     required
+                    suppressHydrationWarning
                     placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -424,6 +428,7 @@ export default function LoginPage() {
                   <button
                     type="submit"
                     disabled={pwStatus === "sending"}
+                    suppressHydrationWarning
                     className="rounded-md bg-neutral-900 px-3 py-2.5 text-sm font-medium text-white transition-colors hover:bg-violet-700 disabled:opacity-50"
                   >
                     {pwStatus === "sending" ? "Signing in…" : "Sign in →"}

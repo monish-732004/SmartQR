@@ -140,22 +140,6 @@ export default async function DashboardPage() {
             <StudyTrendChart data={studyStats.dailyTrend} />
           </div>
 
-          <div className="mt-8 rounded-lg border border-neutral-200 bg-white p-4">
-            <h2 className="mb-3 text-sm font-medium text-neutral-700">
-              Study activity over the last 26 weeks
-            </h2>
-            <Heatmap
-              dayCounts={studyStats.dayMinutes}
-              levelFor={(minutes) => {
-                if (minutes <= 0) return 0;
-                if (minutes < 30) return 1;
-                if (minutes < 60) return 2;
-                if (minutes < 120) return 3;
-                return 4;
-              }}
-              tooltipFormatter={(minutes) => `${Math.round(minutes)} min studied`}
-            />
-          </div>
         </>
       )}
     </div>
