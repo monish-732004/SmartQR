@@ -203,13 +203,20 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="fixed inset-0 z-40 overflow-y-auto bg-[#f7f3ec] px-4 py-6 sm:px-8">
+    <div
+      className="fixed inset-0 z-40 overflow-y-auto px-4 py-6 sm:px-8"
+      style={{
+        backgroundImage: "url(/ub.jpg)",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundAttachment: "fixed",
+      }}
+    >
       {/* Nav */}
-      <div className="mx-auto flex max-w-5xl items-center justify-between py-5">
+      <div className="mx-auto mb-8 flex max-w-5xl items-center justify-between rounded-xl bg-white/80 px-4 py-3 shadow-sm backdrop-blur-md">
         <div className="flex items-center gap-2">
-          <span className="flex h-7 w-7 items-center justify-center rounded bg-violet-600 text-sm text-white">
-            ⚡
-          </span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" alt="SRM Institute of Science & Technology" className="h-8 w-auto" />
           <span className="font-mono text-sm font-semibold tracking-tight text-neutral-900">
             SmartPlug QR
           </span>
@@ -226,7 +233,7 @@ export default function LoginPage() {
 
       <div className="mx-auto grid max-w-5xl gap-12 pb-16 lg:grid-cols-12 lg:gap-8">
         {/* Left: editorial hero */}
-        <div className="lg:col-span-7">
+        <div className="rounded-2xl bg-white/80 p-6 shadow-sm backdrop-blur-md sm:p-8 lg:col-span-7">
           <Sticker rotate="-2deg" className="mb-6">
             <span>Campus network</span>
             <span className="flex items-center gap-1 text-neutral-500">
@@ -335,12 +342,13 @@ export default function LoginPage() {
               <p className="mt-2 text-sm text-neutral-500">
                 {mode === "link"
                   ? "Sign in with your institutional email to continue."
-                  : "Librarians & admins: sign in with the password you set."}
+                  : "Sign in with your login ID and password."}
               </p>
 
               <div className="mt-4 flex gap-1 rounded-md bg-neutral-100 p-1 font-mono text-[11px] uppercase tracking-wide">
                 <button
                   type="button"
+                  suppressHydrationWarning
                   onClick={() => setMode("link")}
                   className={`flex-1 rounded px-2 py-1.5 transition-colors ${
                     mode === "link"
@@ -352,6 +360,7 @@ export default function LoginPage() {
                 </button>
                 <button
                   type="button"
+                  suppressHydrationWarning
                   onClick={() => setMode("password")}
                   className={`flex-1 rounded px-2 py-1.5 transition-colors ${
                     mode === "password"
@@ -425,8 +434,10 @@ export default function LoginPage() {
                     </p>
                   )}
                   <p className="text-xs text-neutral-400">
-                    No password yet? Sign in with the email link once, then
-                    set one from your account menu.
+                    No password yet? Sign in with the email link once —
+                    we&apos;ll show you a login ID and password to use from
+                    then on (staff can also set their own from the account
+                    menu).
                   </p>
                 </form>
               )}
@@ -439,6 +450,12 @@ export default function LoginPage() {
           </div>
         </div>
       </div>
+
+      <footer className="mx-auto mt-2 max-w-5xl">
+        <div className="rounded-lg bg-white/80 py-3 text-center text-xs font-medium text-neutral-600 shadow-sm backdrop-blur-md">
+          Made by Monish R and Prajith Arjunan S
+        </div>
+      </footer>
     </div>
   );
 }

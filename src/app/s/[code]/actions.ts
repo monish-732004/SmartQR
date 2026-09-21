@@ -19,7 +19,7 @@ function friendlyError(error: { message: string; code?: string }): string {
 function revalidateEverywhere(qrCode: string) {
   revalidatePath(`/s/${qrCode}`);
   revalidatePath("/floors", "layout");
-  revalidatePath("/admin", "layout");
+  revalidatePath("/librarian", "layout");
 }
 
 export async function startSession(

@@ -1,10 +1,11 @@
 import { redirect } from "next/navigation";
-import { getProfile, isStaff } from "@/lib/auth";
+import { getProfile, isAdmin, isStaff } from "@/lib/auth";
 import SetPasswordForm from "./SetPasswordForm";
 
 export default async function SetPasswordPage() {
   const profile = await getProfile();
   if (!isStaff(profile)) redirect("/floors");
+  const landingHref = isAdmin(profile) ? "/admin" : "/librarian";
 
   return (
     <div className="mx-auto max-w-sm">
@@ -16,7 +17,7 @@ export default async function SetPasswordPage() {
           ? "Update the password you use to sign in."
           : "You signed in with a one-time email link. Set a password now so you can sign in faster next time — you can still use the email link too."}
       </p>
-      <SetPasswordForm email={profile!.email} />
+      <SetPasswordForm email={profile!.email} landingHref={landingHref} />
     </div>
   );
 }

@@ -41,56 +41,61 @@ export default async function NavBar() {
 
   return (
     <header className="sticky top-0 z-10 border-b border-neutral-200 bg-white/80 backdrop-blur-sm">
-      <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-        <div className="flex items-center gap-6">
-          <Link
-            href="/floors"
-            className="bg-gradient-to-r from-violet-600 via-fuchsia-500 to-orange-400 bg-clip-text font-semibold text-transparent"
-          >
-            ⚡ SmartPlug QR
-          </Link>
-          <nav className="flex gap-4 text-sm">
-            <NavLink href="/floors">Floors</NavLink>
-            <NavLink href="/dashboard">My dashboard</NavLink>
-            {staff && (
-              <>
-                <NavLink href="/admin">Admin</NavLink>
-                <NavLink href="/admin/reports">Reports</NavLink>
-                <NavLink href="/admin/analytics">Analytics</NavLink>
-                <NavLink href="/admin/qr-codes">QR codes</NavLink>
-              </>
-            )}
-            {admin && (
-              <>
-                <NavLink href="/admin/users">Users</NavLink>
-                <NavLink href="/admin/activity">Activity</NavLink>
-              </>
-            )}
-          </nav>
-        </div>
-        <div className="flex items-center gap-3 text-sm text-neutral-600">
-          <span
-            className={`rounded-full px-2 py-0.5 text-xs font-medium ${ROLE_STYLES[profile.role]}`}
-          >
-            {profile.role}
-          </span>
-          {floorName && (
-            <span className="hidden text-xs text-neutral-400 sm:inline">
-              {floorName}
+      <div className="mx-auto max-w-5xl px-4 py-3">
+        <div className="flex items-center justify-between gap-4">
+          <Link href="/floors" className="flex shrink-0 items-center gap-2 whitespace-nowrap">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.png" alt="SRM Institute of Science & Technology" className="h-8 w-auto" />
+            <span className="bg-gradient-to-r from-violet-600 via-fuchsia-500 to-orange-400 bg-clip-text font-semibold text-transparent">
+              SmartPlug QR
             </span>
-          )}
-          {staff && (
-            <Link
-              href="/account/set-password"
-              title={profile.has_password ? "Change password" : "Set a password"}
-              className="text-xs text-neutral-400 hover:text-violet-700"
-            >
-              🔑
+          </Link>
+          <div className="flex items-center gap-3 text-sm text-neutral-600">
+            <Link href="/account" className="flex items-center gap-3 hover:opacity-80" title="My profile">
+              <span
+                className={`rounded-full px-2 py-0.5 text-xs font-medium ${ROLE_STYLES[profile.role]}`}
+              >
+                {profile.role}
+              </span>
+              {floorName && (
+                <span className="hidden text-xs text-neutral-400 sm:inline">
+                  {floorName}
+                </span>
+              )}
+              <span className="hidden sm:inline">{profile.email}</span>
             </Link>
-          )}
-          <span className="hidden sm:inline">{profile.email}</span>
-          <SignOutButton />
+            {staff && (
+              <Link
+                href="/account/set-password"
+                title={profile.has_password ? "Change password" : "Set a password"}
+                className="text-xs text-neutral-400 hover:text-violet-700"
+              >
+                🔑
+              </Link>
+            )}
+            <SignOutButton />
+          </div>
         </div>
+        <nav className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+          <NavLink href="/dashboard">My dashboard</NavLink>
+          {staff && (
+            <>
+              <NavLink href="/librarian">Overview</NavLink>
+              <NavLink href="/librarian/students">Students</NavLink>
+              <NavLink href="/librarian/reports">Reports</NavLink>
+              <NavLink href="/librarian/analytics">Analytics</NavLink>
+              <NavLink href="/librarian/qr-codes">QR codes</NavLink>
+            </>
+          )}
+          {admin && (
+            <>
+              <NavLink href="/admin">Admin</NavLink>
+              <NavLink href="/admin/users">Users</NavLink>
+              <NavLink href="/admin/incidents">Incident reviews</NavLink>
+              <NavLink href="/admin/activity">Activity</NavLink>
+            </>
+          )}
+        </nav>
       </div>
     </header>
   );

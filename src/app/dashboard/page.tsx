@@ -1,11 +1,22 @@
 import { createClient } from "@/lib/supabase/server";
+import { getProfile } from "@/lib/auth";
 import { computeDashboardStats } from "@/lib/dashboardStats";
+import { computeStudyStats } from "@/lib/studyStats";
 import StatTile from "@/components/StatTile";
 import Heatmap from "@/components/Heatmap";
-import { SESSION_PURPOSE_LABELS, type Session } from "@/lib/types";
+import DistributionBars from "@/components/DistributionBars";
+import StudyTimer from "./StudyTimer";
+import StudyTrendChart from "./StudyTrendChart";
+import {
+  SESSION_PURPOSE_LABELS,
+  STUDY_CATEGORY_LABELS,
+  type Session,
+  type StudyActivity,
+} from "@/lib/types";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
+  const profile = await getProfile();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -17,6 +28,20 @@ export default async function DashboardPage() {
     .order("started_at", { ascending: false });
 
   const stats = computeDashboardStats((sessions as Session[]) ?? []);
+
+  // Study & work tracking is a student-only feature — librarians/admins
+  // don't get it on their dashboard.
+  const isStudent = profile?.role === "student";
+  let studyStats = null;
+  if (isStudent) {
+    const { data: studyActivities } = await supabase
+      .from("study_activities")
+      .select("*")
+      .eq("user_id", user!.id)
+      .order("started_at", { ascending: false });
+
+    studyStats = computeStudyStats((studyActivities as StudyActivity[]) ?? []);
+  }
 
   let mostUsedLabel = "—";
   if (stats.mostUsedPointId) {
@@ -63,31 +88,76 @@ export default async function DashboardPage() {
         <h2 className="mb-3 text-sm font-medium text-neutral-700">
           Sessions by purpose
         </h2>
-        <div className="flex flex-col gap-2">
-          {Object.entries(stats.purposeCounts).map(([key, count]) => {
-            const max = Math.max(1, ...Object.values(stats.purposeCounts));
-            return (
-              <div key={key} className="flex items-center gap-3 text-sm">
-                <span className="w-32 text-neutral-600">
-                  {SESSION_PURPOSE_LABELS[key as keyof typeof SESSION_PURPOSE_LABELS]}
-                </span>
-                <div className="h-2 flex-1 overflow-hidden rounded-full bg-neutral-100">
-                  <div
-                    className="h-full rounded-full"
-                    style={{
-                      width: `${(count / max) * 100}%`,
-                      backgroundColor: "#2a78d6",
-                    }}
-                  />
-                </div>
-                <span className="w-6 text-right tabular-nums text-neutral-500">
-                  {count}
-                </span>
-              </div>
-            );
-          })}
-        </div>
+        <DistributionBars
+          items={Object.entries(stats.purposeCounts).map(([key, count]) => ({
+            label: SESSION_PURPOSE_LABELS[key as keyof typeof SESSION_PURPOSE_LABELS],
+            value: count,
+          }))}
+        />
       </div>
+
+      {/* Study & work — students only ----------------------------------- */}
+      {isStudent && studyStats && (
+        <>
+          <h1 className="mt-12 mb-4 text-xl font-semibold">Study &amp; work</h1>
+          <p className="mb-4 text-sm text-neutral-500">
+            Track DSA, system design, and other study or work time —
+            independent of charging, so you can log it whenever you&apos;re
+            working.
+          </p>
+
+          <div className="rounded-lg border border-neutral-200 bg-white p-4">
+            <StudyTimer activeActivity={studyStats.activeActivity} />
+          </div>
+
+          <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <StatTile label="Total study hours" value={studyStats.totalHours.toFixed(1)} />
+            <StatTile label="Sessions" value={String(studyStats.sessionCount)} />
+            <StatTile
+              label="Avg. session"
+              value={`${Math.round(studyStats.avgSessionMinutes)} min`}
+            />
+            <StatTile label="Study streak" value={`${studyStats.currentStreak}d`} />
+          </div>
+
+          <div className="mt-8 rounded-lg border border-neutral-200 bg-white p-4">
+            <h2 className="mb-3 text-sm font-medium text-neutral-700">
+              Where your time goes
+            </h2>
+            <DistributionBars
+              items={Object.entries(studyStats.categoryMinutes).map(([key, minutes]) => ({
+                label: STUDY_CATEGORY_LABELS[key as keyof typeof STUDY_CATEGORY_LABELS],
+                value: Math.round((minutes / 60) * 10) / 10,
+              }))}
+            />
+            <p className="mt-2 text-xs text-neutral-400">Hours per category, all time.</p>
+          </div>
+
+          <div className="mt-8 rounded-lg border border-neutral-200 bg-white p-4">
+            <h2 className="mb-3 text-sm font-medium text-neutral-700">
+              Last 14 days
+            </h2>
+            <StudyTrendChart data={studyStats.dailyTrend} />
+          </div>
+
+          <div className="mt-8 rounded-lg border border-neutral-200 bg-white p-4">
+            <h2 className="mb-3 text-sm font-medium text-neutral-700">
+              Study activity over the last 26 weeks
+            </h2>
+            <Heatmap
+              dayCounts={studyStats.dayMinutes}
+              levelFor={(minutes) => {
+                if (minutes <= 0) return 0;
+                if (minutes < 30) return 1;
+                if (minutes < 60) return 2;
+                if (minutes < 120) return 3;
+                return 4;
+              }}
+              tooltipFormatter={(minutes) => `${Math.round(minutes)} min studied`}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 }

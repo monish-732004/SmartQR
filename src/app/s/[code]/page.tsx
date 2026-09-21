@@ -93,8 +93,8 @@ export default async function StationPage({
         </span>
       </div>
       <p className="mb-4 text-sm text-neutral-500">
-        {points.length} port{points.length === 1 ? "" : "s"} at this station —
-        pick yours below.
+        This QR code identifies this socket directly — see its status and use
+        it below.
       </p>
 
       <StationLive

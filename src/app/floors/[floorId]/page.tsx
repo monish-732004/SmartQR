@@ -1,6 +1,8 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getProfile, isStaff } from "@/lib/auth";
+import { buildStationPath } from "@/lib/qr";
 import type { ChargingPoint, Floor } from "@/lib/types";
 import FloorPointsLive from "./FloorPointsLive";
 
@@ -9,6 +11,14 @@ export default async function FloorDetailPage({
 }: PageProps<"/floors/[floorId]">) {
   const { floorId } = await params;
   const supabase = await createClient();
+  const profile = await getProfile();
+  const staff = isStaff(profile);
+
+  // Same scoping as the /floors list: a librarian only ever sees their
+  // own floor's section here, not the whole library.
+  if (profile?.role === "librarian" && profile.floor_id && profile.floor_id !== floorId) {
+    redirect(`/floors/${profile.floor_id}`);
+  }
 
   const { data: floor } = await supabase
     .from("floors")
@@ -25,6 +35,12 @@ export default async function FloorDetailPage({
     .order("code");
 
   const allPoints = (points as ChargingPoint[]) ?? [];
+
+  // Each socket has its own signed QR destination (see 0012_unique_qr_per_port.sql
+  // — qr_code is now unique per port). Signing needs Node's crypto module,
+  // so it's computed here server-side and handed down as plain strings.
+  const signedPaths: Record<string, string> = {};
+  for (const p of allPoints) signedPaths[p.qr_code] = buildStationPath(p.qr_code);
 
   return (
     <div>
@@ -45,13 +61,27 @@ export default async function FloorDetailPage({
       </div>
 
       <p className="mb-5 text-sm text-neutral-500">
-        Each card is one physical station. The{" "}
-        <strong className="text-neutral-700">Scan</strong> button beside any
-        port shows that station&apos;s actual QR code first, just like a
-        phone camera would, before taking you to it.
+        {staff ? (
+          <>
+            Each card is one socket. Toggle its status directly below — no
+            need to scan.
+          </>
+        ) : (
+          <>
+            Each card is one socket, with its own QR code. The{" "}
+            <strong className="text-neutral-700">Scan</strong> button takes
+            you straight to that socket&apos;s real page — the same place
+            scanning its physical QR code would.
+          </>
+        )}
       </p>
 
-      <FloorPointsLive floorId={floorId} initialPoints={allPoints} />
+      <FloorPointsLive
+        floorId={floorId}
+        initialPoints={allPoints}
+        staff={staff}
+        signedPaths={signedPaths}
+      />
     </div>
   );
 }

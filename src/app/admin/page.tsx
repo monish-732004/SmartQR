@@ -1,47 +1,47 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
-import { getProfile, isAdmin } from "@/lib/auth";
-import type { ChargingPoint, Floor } from "@/lib/types";
-import AdminOverviewLive from "./AdminOverviewLive";
 
-export default async function AdminOverviewPage() {
-  const supabase = await createClient();
-  const profile = await getProfile();
-  const scopedFloorId = !isAdmin(profile) ? profile?.floor_id ?? null : null;
+const LINKS = [
+  {
+    href: "/admin/users",
+    title: "Users",
+    description: "Assign librarian/admin roles and floors.",
+  },
+  {
+    href: "/admin/incidents",
+    title: "Incident reviews",
+    description: "Review librarian reports and manage student restrictions.",
+  },
+  {
+    href: "/admin/activity",
+    title: "Activity",
+    description: "Full audit log of student and staff actions.",
+  },
+];
 
-  let floorsQuery = supabase.from("floors").select("*").order("sort_order");
-  if (scopedFloorId) floorsQuery = floorsQuery.eq("id", scopedFloorId);
-  const { data: floors } = await floorsQuery;
-
-  let pointsQuery = supabase.from("charging_points").select("*");
-  if (scopedFloorId) pointsQuery = pointsQuery.eq("floor_id", scopedFloorId);
-  const { data: points } = await pointsQuery;
-
+export default function AdminPage() {
   return (
     <div>
-      <h1 className="mb-4 text-xl font-semibold">
-        {scopedFloorId ? `${(floors as Floor[])?.[0]?.name ?? "Your floor"} — live overview` : "Live overview"}
-      </h1>
+      <h1 className="mb-2 text-xl font-semibold">Admin</h1>
+      <p className="mb-6 text-sm text-neutral-500">
+        Super admin tools. For day-to-day floor operations, see the{" "}
+        <Link href="/librarian" className="text-violet-700 hover:underline">
+          librarian workspace
+        </Link>
+        .
+      </p>
 
-      {profile && !profile.has_password && (
-        <div className="mb-4 flex items-center justify-between gap-4 rounded-lg border border-violet-200 bg-violet-50 px-4 py-3">
-          <p className="text-sm text-violet-800">
-            🔑 Set a password so you don&apos;t need an email link every time
-            you sign in.
-          </p>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {LINKS.map((link) => (
           <Link
-            href="/account/set-password"
-            className="whitespace-nowrap rounded-md bg-violet-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-violet-700"
+            key={link.href}
+            href={link.href}
+            className="rounded-lg border border-neutral-200 bg-white p-4 hover:border-neutral-400"
           >
-            Set password
+            <h2 className="font-medium">{link.title}</h2>
+            <p className="mt-1 text-sm text-neutral-500">{link.description}</p>
           </Link>
-        </div>
-      )}
-
-      <AdminOverviewLive
-        floors={(floors as Floor[]) ?? []}
-        initialPoints={(points as ChargingPoint[]) ?? []}
-      />
+        ))}
+      </div>
     </div>
   );
 }

@@ -98,6 +98,84 @@ export interface MaintenanceTicket {
   resolution_notes: string | null;
 }
 
+export type IncidentReportType = "socket_issue" | "student_conduct";
+export type ConductCategory =
+  | "playing_games"
+  | "excessive_talking"
+  | "disturbing_others"
+  | "inappropriate_behavior"
+  | "other";
+export type IncidentReportStatus = "pending" | "approved" | "rejected" | "resolved";
+export type RestrictionType = "warning" | "temporary" | "permanent";
+export type RestrictionScope = "sockets" | "all_services";
+
+export interface IncidentReport {
+  id: string;
+  report_type: IncidentReportType;
+  reporter_id: string;
+  student_id: string | null;
+  point_id: string | null;
+  conduct_category: ConductCategory | null;
+  description: string;
+  occurred_at: string;
+  evidence_path: string | null;
+  status: IncidentReportStatus;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  review_notes: string | null;
+  created_at: string;
+}
+
+export interface StudentRestriction {
+  id: string;
+  student_id: string;
+  incident_report_id: string;
+  restriction_type: RestrictionType;
+  scope: RestrictionScope;
+  reason: string | null;
+  starts_at: string;
+  ends_at: string | null;
+  issued_by: string;
+  revoked_at: string | null;
+  revoked_by: string | null;
+  created_at: string;
+}
+
+export type StudyCategory =
+  | "dsa"
+  | "system_design"
+  | "aptitude"
+  | "interview_prep"
+  | "reading"
+  | "other";
+
+export interface StudyActivity {
+  id: string;
+  user_id: string;
+  category: StudyCategory;
+  label: string | null;
+  started_at: string;
+  ended_at: string | null;
+  created_at: string;
+}
+
+export const STUDY_CATEGORY_LABELS: Record<StudyCategory, string> = {
+  dsa: "DSA",
+  system_design: "System design",
+  aptitude: "Aptitude",
+  interview_prep: "Interview prep",
+  reading: "Reading",
+  other: "Other",
+};
+
+export const CONDUCT_CATEGORY_LABELS: Record<ConductCategory, string> = {
+  playing_games: "Playing games",
+  excessive_talking: "Excessive talking",
+  disturbing_others: "Disturbing others",
+  inappropriate_behavior: "Inappropriate behavior",
+  other: "Other",
+};
+
 export const FAULT_ISSUE_LABELS: Record<FaultIssueType, string> = {
   no_power: "No power",
   loose_socket: "Loose socket",

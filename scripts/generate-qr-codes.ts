@@ -1,7 +1,7 @@
 /**
- * Generates a signed QR code PNG for every charging *station* (the shared
- * qr_code on one or more charging_points — a real station's multiple
- * sockets share one printed QR). Run after seeding: `npm run qr:generate`
+ * Generates a signed QR code PNG for every charging socket (each
+ * charging_points row has its own unique qr_code). Run after seeding:
+ * `npm run qr:generate`
  */
 import { existsSync, mkdirSync, writeFileSync } from "fs";
 import path from "path";
@@ -74,7 +74,7 @@ async function main() {
     path.join(OUT_DIR, "manifest.json"),
     JSON.stringify(manifest, null, 2)
   );
-  console.log(`\nGenerated ${stations.size} station QR codes in ${OUT_DIR}`);
+  console.log(`\nGenerated ${stations.size} socket QR codes in ${OUT_DIR}`);
 }
 
 main().catch((err) => {

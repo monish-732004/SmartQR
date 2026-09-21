@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { getProfile } from "@/lib/auth";
 import type { ChargingPoint, Floor } from "@/lib/types";
 
 const ACCENTS = [
@@ -11,11 +12,16 @@ const ACCENTS = [
 
 export default async function FloorsPage() {
   const supabase = await createClient();
+  const profile = await getProfile();
+  // Librarians are scoped to their own floor everywhere else in the app
+  // (RLS on sessions/reports, explicit filters on QR codes/analytics) —
+  // this shared browse page is the one exception, since it's built for
+  // students to see every floor. Admins still see everything.
+  const scopedFloorId = profile?.role === "librarian" ? profile.floor_id : null;
 
-  const { data: floors } = await supabase
-    .from("floors")
-    .select("*")
-    .order("sort_order");
+  let floorsQuery = supabase.from("floors").select("*").order("sort_order");
+  if (scopedFloorId) floorsQuery = floorsQuery.eq("id", scopedFloorId);
+  const { data: floors } = await floorsQuery;
 
   const { data: points } = await supabase
     .from("charging_points")

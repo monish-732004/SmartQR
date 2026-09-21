@@ -1,12 +1,11 @@
 import { createHmac, timingSafeEqual } from "crypto";
 
 /**
- * A physical charging station prints one QR code that covers several
- * ports (sockets) — the QR encodes a signed URL for the station's shared
- * `qr_code`, not any single port. This is what makes it a station's
- * "cryptographically signed digital identity": a student photographing or
+ * Every socket prints its own QR code, encoding a signed URL for that
+ * port's unique `qr_code`. This is what makes it a socket's
+ * cryptographically signed digital identity: a student photographing or
  * retyping a code without the matching signature can't spoof another
- * station, and the server rejects any code/signature pair it didn't sign.
+ * socket, and the server rejects any code/signature pair it didn't sign.
  */
 function secret(): string {
   const s = process.env.QR_SIGNING_SECRET;

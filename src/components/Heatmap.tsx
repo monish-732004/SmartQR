@@ -3,7 +3,7 @@ import { format } from "date-fns";
 
 const LEVEL_COLORS = ["#e1e0d9", "#b7d3f6", "#6da7ec", "#2a78d6", "#184f95"];
 
-function levelFor(count: number): number {
+function defaultLevelFor(count: number): number {
   if (count <= 0) return 0;
   if (count === 1) return 1;
   if (count === 2) return 2;
@@ -11,7 +11,19 @@ function levelFor(count: number): number {
   return 4;
 }
 
-export default function Heatmap({ dayCounts }: { dayCounts: Map<string, number> }) {
+function defaultTooltip(count: number): string {
+  return `${count} session${count === 1 ? "" : "s"}`;
+}
+
+export default function Heatmap({
+  dayCounts,
+  levelFor = defaultLevelFor,
+  tooltipFormatter = defaultTooltip,
+}: {
+  dayCounts: Map<string, number>;
+  levelFor?: (value: number) => number;
+  tooltipFormatter?: (value: number) => string;
+}) {
   const columns = buildHeatmapWeeks(dayCounts, 26);
 
   return (
@@ -23,9 +35,7 @@ export default function Heatmap({ dayCounts }: { dayCounts: Map<string, number> 
               cell.date ? (
                 <div
                   key={j}
-                  title={`${format(cell.date, "MMM d, yyyy")}: ${cell.count} session${
-                    cell.count === 1 ? "" : "s"
-                  }`}
+                  title={`${format(cell.date, "MMM d, yyyy")}: ${tooltipFormatter(cell.count)}`}
                   className="h-[11px] w-[11px] rounded-[2px]"
                   style={{ backgroundColor: LEVEL_COLORS[levelFor(cell.count)] }}
                 />

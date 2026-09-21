@@ -2,7 +2,15 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import type { AvailabilityStatus, HealthStatus, UserRole } from "@/lib/types";
+import type {
+  AvailabilityStatus,
+  ConductCategory,
+  HealthStatus,
+  IncidentReportStatus,
+  RestrictionScope,
+  RestrictionType,
+  UserRole,
+} from "@/lib/types";
 
 export type ActionResult = { ok: true } | { ok: false; message: string };
 
@@ -20,7 +28,7 @@ export async function correctPointStatus(
 
   if (error) return { ok: false, message: error.message };
 
-  revalidatePath("/admin", "layout");
+  revalidatePath("/librarian", "layout");
   return { ok: true };
 }
 
@@ -40,7 +48,7 @@ export async function verifyFaultReport(
 
   if (error) return { ok: false, message: error.message };
 
-  revalidatePath("/admin", "layout");
+  revalidatePath("/librarian", "layout");
   return { ok: true };
 }
 
@@ -52,7 +60,7 @@ export async function dismissFaultReport(reportId: string): Promise<ActionResult
 
   if (error) return { ok: false, message: error.message };
 
-  revalidatePath("/admin", "layout");
+  revalidatePath("/librarian", "layout");
   return { ok: true };
 }
 
@@ -74,6 +82,88 @@ export async function setUserRole(
   return { ok: true };
 }
 
+export async function reportSocketIssue(
+  pointId: string,
+  description: string,
+  evidencePath: string | null
+): Promise<ActionResult> {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("report_socket_issue", {
+    p_point_id: pointId,
+    p_description: description,
+    p_evidence_path: evidencePath,
+  });
+
+  if (error) return { ok: false, message: error.message };
+
+  revalidatePath("/librarian/students");
+  return { ok: true };
+}
+
+export async function reportStudentConduct(
+  studentId: string,
+  pointId: string | null,
+  category: ConductCategory,
+  description: string,
+  occurredAt: string,
+  evidencePath: string | null
+): Promise<ActionResult> {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("report_student_conduct", {
+    p_student_id: studentId,
+    p_point_id: pointId,
+    p_conduct_category: category,
+    p_description: description,
+    p_occurred_at: occurredAt,
+    p_evidence_path: evidencePath,
+  });
+
+  if (error) return { ok: false, message: error.message };
+
+  revalidatePath("/librarian/students");
+  return { ok: true };
+}
+
+export async function reviewIncidentReport(
+  reportId: string,
+  decision: IncidentReportStatus,
+  reviewNotes: string,
+  restrictionType?: RestrictionType,
+  restrictionScope?: RestrictionScope,
+  restrictionDays?: number
+): Promise<ActionResult> {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("review_incident_report", {
+    p_report_id: reportId,
+    p_decision: decision,
+    p_review_notes: reviewNotes || null,
+    p_restriction_type: restrictionType ?? null,
+    p_restriction_scope: restrictionScope ?? "all_services",
+    p_restriction_days: restrictionDays ?? null,
+  });
+
+  if (error) return { ok: false, message: error.message };
+
+  revalidatePath("/admin/incidents");
+  return { ok: true };
+}
+
+export async function revokeRestriction(
+  restrictionId: string,
+  notes: string
+): Promise<ActionResult> {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("revoke_restriction", {
+    p_restriction_id: restrictionId,
+    p_notes: notes || null,
+  });
+
+  if (error) return { ok: false, message: error.message };
+
+  revalidatePath("/admin/incidents");
+  return { ok: true };
+}
+
 export async function closeMaintenanceTicket(
   ticketId: string,
   resolutionNotes: string,
@@ -88,6 +178,6 @@ export async function closeMaintenanceTicket(
 
   if (error) return { ok: false, message: error.message };
 
-  revalidatePath("/admin", "layout");
+  revalidatePath("/librarian", "layout");
   return { ok: true };
 }

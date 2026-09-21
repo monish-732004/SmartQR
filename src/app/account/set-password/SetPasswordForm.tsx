@@ -4,7 +4,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
-export default function SetPasswordForm({ email }: { email: string }) {
+export default function SetPasswordForm({
+  email,
+  landingHref,
+}: {
+  email: string;
+  landingHref: string;
+}) {
   const router = useRouter();
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -55,10 +61,10 @@ export default function SetPasswordForm({ email }: { email: string }) {
           <strong>{email}</strong> and this password — no email link needed.
         </p>
         <button
-          onClick={() => router.push("/admin")}
+          onClick={() => router.push(landingHref)}
           className="text-sm font-medium underline"
         >
-          Continue to admin →
+          Continue →
         </button>
       </div>
     );
