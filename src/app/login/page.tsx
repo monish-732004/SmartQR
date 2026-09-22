@@ -411,6 +411,10 @@ export default function LoginPage() {
                     type="text"
                     required
                     suppressHydrationWarning
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    autoComplete="username"
                     placeholder="Email or registration ID"
                     value={loginId}
                     onChange={(e) => setLoginId(e.target.value)}
@@ -420,6 +424,10 @@ export default function LoginPage() {
                     type="password"
                     required
                     suppressHydrationWarning
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    autoComplete="current-password"
                     placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
