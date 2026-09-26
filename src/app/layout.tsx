@@ -25,7 +25,18 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-gradient-to-b from-violet-50 via-white to-white text-neutral-900">
+      <body className="min-h-full flex flex-col text-neutral-900">
+        {/* Same photo as the login page, with a light wash so text and
+            cards stay readable. Fixed layer (not background-attachment) so
+            it also works on mobile browsers. */}
+        <div
+          aria-hidden
+          className="fixed inset-0 -z-10 bg-cover bg-center"
+          style={{
+            backgroundImage:
+              "linear-gradient(rgba(255,255,255,0.78), rgba(255,255,255,0.78)), url(/ub.jpg)",
+          }}
+        />
         <NavBar />
         <main className="animate-fade-in mx-auto w-full max-w-5xl flex-1 px-4 py-6 pb-24 sm:pb-6">
           {children}

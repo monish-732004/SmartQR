@@ -101,9 +101,11 @@ export default async function NavBar() {
         </nav>
       </div>
     </header>
-    <div className="sm:hidden">
-      <ScanQrButton floating />
-    </div>
+    {!staff && (
+      <div className="sm:hidden">
+        <ScanQrButton floating />
+      </div>
+    )}
     {profile.role === "student" && (
       <PresenceTracker
         userId={profile.id}

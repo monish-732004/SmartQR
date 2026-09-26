@@ -71,7 +71,7 @@ export default async function DashboardPage() {
   return (
     <div>
       <LiveRefresh table="sessions" filter={`user_id=eq.${user!.id}`} />
-      <ScanQrButton className="mb-6" />
+      {isStudent && <ScanQrButton className="mb-6" />}
       <h1 className="mb-4 text-xl font-semibold">My dashboard</h1>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">

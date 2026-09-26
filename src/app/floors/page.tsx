@@ -37,7 +37,7 @@ export default async function FloorsPage() {
 
   return (
     <div>
-      <ScanQrButton className="mb-6" />
+      {profile?.role === "student" && <ScanQrButton className="mb-6" />}
       <h1 className="mb-1 text-2xl font-semibold text-neutral-900">Floors</h1>
       <p className="mb-5 text-sm text-neutral-500">
         Pick a floor to see live availability, grouped by station.
