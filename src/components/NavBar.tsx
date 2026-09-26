@@ -3,6 +3,7 @@ import { getProfile, isAdmin, isStaff } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import SignOutButton from "@/components/SignOutButton";
 import ScanQrButton from "@/components/ScanQrButton";
+import PresenceTracker from "@/components/PresenceTracker";
 
 const ROLE_STYLES: Record<string, string> = {
   student: "bg-sky-100 text-sky-700",
@@ -103,6 +104,14 @@ export default async function NavBar() {
     <div className="sm:hidden">
       <ScanQrButton floating />
     </div>
+    {profile.role === "student" && (
+      <PresenceTracker
+        userId={profile.id}
+        name={profile.full_name ?? profile.email}
+        email={profile.email}
+        registrationId={profile.registration_id ?? null}
+      />
+    )}
     </>
   );
 }
