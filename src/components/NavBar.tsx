@@ -48,8 +48,6 @@ export default async function NavBar() {
         <div className="flex items-center justify-between gap-4">
           <Link href="/floors" className="flex shrink-0 items-center gap-2 whitespace-nowrap">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/srm_logo.png" alt="SRM Institute of Science & Technology" className="h-9 w-auto" />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/logo.png" alt="SmartPlug QR" className="h-8 w-auto" />
             <span className="bg-gradient-to-r from-violet-600 via-fuchsia-500 to-orange-400 bg-clip-text font-semibold text-transparent">
               SmartPlug QR
