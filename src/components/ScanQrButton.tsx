@@ -225,7 +225,14 @@ function CameraIcon() {
   );
 }
 
-export default function ScanQrButton({ className = "" }: { className?: string }) {
+export default function ScanQrButton({
+  className = "",
+  floating = false,
+}: {
+  className?: string;
+  /** Fixed bottom-right pill, visible on every page in portrait. */
+  floating?: boolean;
+}) {
   const [open, setOpen] = useState(false);
   const close = useCallback(() => setOpen(false), []);
 
@@ -234,7 +241,12 @@ export default function ScanQrButton({ className = "" }: { className?: string })
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className={`flex w-full items-center justify-center gap-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-5 py-4 text-base font-semibold text-white shadow-lg shadow-violet-200 transition-transform active:scale-[0.98] sm:w-auto ${className}`}
+        aria-label="Scan QR Code"
+        className={
+          floating
+            ? `fixed bottom-5 right-4 z-30 flex items-center gap-2 rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-600 px-5 py-3.5 text-sm font-semibold text-white shadow-xl shadow-violet-300 transition-transform active:scale-95 ${className}`
+            : `flex w-full items-center justify-center gap-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 px-5 py-4 text-base font-semibold text-white shadow-lg shadow-violet-200 transition-transform active:scale-[0.98] sm:w-auto ${className}`
+        }
       >
         <CameraIcon />
         Scan QR Code

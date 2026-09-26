@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getProfile, isAdmin, isStaff } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import SignOutButton from "@/components/SignOutButton";
+import ScanQrButton from "@/components/ScanQrButton";
 
 const ROLE_STYLES: Record<string, string> = {
   student: "bg-sky-100 text-sky-700",
@@ -40,6 +41,7 @@ export default async function NavBar() {
   }
 
   return (
+    <>
     <header className="sticky top-0 z-10 border-b border-neutral-200 bg-white/80 backdrop-blur-sm">
       <div className="mx-auto max-w-5xl px-4 py-3">
         <div className="flex items-center justify-between gap-4">
@@ -99,5 +101,9 @@ export default async function NavBar() {
         </nav>
       </div>
     </header>
+    <div className="sm:hidden">
+      <ScanQrButton floating />
+    </div>
+    </>
   );
 }

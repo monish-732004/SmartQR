@@ -27,7 +27,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col bg-gradient-to-b from-violet-50 via-white to-white text-neutral-900">
         <NavBar />
-        <main className="animate-fade-in mx-auto w-full max-w-5xl flex-1 px-4 py-6">
+        <main className="animate-fade-in mx-auto w-full max-w-5xl flex-1 px-4 py-6 pb-24 sm:pb-6">
           {children}
         </main>
         <Footer />

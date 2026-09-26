@@ -41,7 +41,13 @@ export default function PortPanel({
   // realtime even when portActiveSession — fetched once at page load —
   // hasn't); a mismatch just means "someone else, details unknown yet".
   const occupied = point.availability_status !== "available";
-  const isMine = occupied && portActiveSession?.user_id === myUserId;
+  const mySessionHere =
+    myActiveSession?.point_id === point.id
+      ? myActiveSession
+      : portActiveSession?.user_id === myUserId
+        ? portActiveSession
+        : null;
+  const isMine = !!mySessionHere;
   const hasActiveElsewhere = !!myActiveSession && myActiveSession.point_id !== point.id;
 
   const accentBorder =
@@ -79,10 +85,19 @@ export default function PortPanel({
 
       <div className="mt-3 flex flex-col gap-3">
         {hasActiveElsewhere && (
-          <p className="rounded-md bg-amber-50 p-3 text-sm text-amber-800">
-            You have an active session on another port. End that one before
-            starting here.
-          </p>
+          <div className="rounded-md bg-amber-50 p-3 text-sm text-amber-800">
+            <p>
+              You have an active session on another port. End that one before
+              starting here.
+            </p>
+            <button
+              disabled={pending}
+              onClick={() => run(() => endSession(myActiveSession!.point_id, qrCode))}
+              className="mt-3 w-full rounded-md bg-amber-600 px-3 py-2.5 text-sm font-medium text-white shadow-sm disabled:opacity-50"
+            >
+              {pending ? "Ending…" : "End Session"}
+            </button>
+          </div>
         )}
 
         {!hasActiveElsewhere && occupied && !isMine && (
@@ -96,21 +111,21 @@ export default function PortPanel({
           </p>
         )}
 
-        {!hasActiveElsewhere && occupied && isMine && portActiveSession && (
+        {!hasActiveElsewhere && isMine && mySessionHere && (
           <div className="rounded-md bg-emerald-50 p-3 text-sm text-emerald-800">
             <p>
               Started{" "}
-              {formatDistanceToNow(new Date(portActiveSession.started_at), {
+              {formatDistanceToNow(new Date(mySessionHere.started_at), {
                 addSuffix: true,
               })}{" "}
-              &middot; {SESSION_PURPOSE_LABELS[portActiveSession.purpose]}
+              &middot; {SESSION_PURPOSE_LABELS[mySessionHere.purpose]}
             </p>
             <button
               disabled={pending}
               onClick={() => run(() => endSession(point.id, qrCode))}
-              className="mt-3 w-full rounded-md bg-gradient-to-r from-emerald-500 to-teal-500 px-3 py-2 text-sm font-medium text-white shadow-sm transition-transform duration-150 hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100"
+              className="mt-3 w-full rounded-md bg-gradient-to-r from-emerald-500 to-teal-500 px-3 py-2.5 text-sm font-medium text-white shadow-sm transition-transform duration-150 hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100"
             >
-              {pending ? "Marking available…" : "✅ Mark Available (End Session)"}
+              {pending ? "Ending session…" : "⏹ End Session"}
             </button>
           </div>
         )}
@@ -121,7 +136,7 @@ export default function PortPanel({
           </p>
         )}
 
-        {!hasActiveElsewhere && !occupied && point.health_status !== "maintenance" && (
+        {!hasActiveElsewhere && !occupied && !isMine && point.health_status !== "maintenance" && (
           <div className="flex flex-col gap-2">
             <select
               value={purpose}
