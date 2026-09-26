@@ -7,6 +7,13 @@ import { createClient } from "@/lib/supabase/client";
 
 const headlineFont = Archivo_Black({ subsets: ["latin"], weight: "400" });
 
+/** Where to go after signing in: the page the user was trying to reach
+ * (e.g. a scanned station link, with its signature), else the floors list. */
+function safeNext(): string {
+  const next = new URLSearchParams(window.location.search).get("next");
+  return next && next.startsWith("/") && !next.startsWith("//") ? next : "/floors";
+}
+
 function allowedDomainsLabel(): string {
   const domains = (process.env.NEXT_PUBLIC_ALLOWED_EMAIL_DOMAINS ?? "")
     .split(",")
@@ -181,7 +188,7 @@ export default function LoginPage() {
           : error.message
       );
     } else {
-      router.push("/floors");
+      router.push(safeNext());
       router.refresh();
     }
   }
@@ -194,10 +201,7 @@ export default function LoginPage() {
     // on the Vercel deployment. Both callback URLs must be in Supabase's
     // redirect allow-list.
     const callback = new URL("/auth/callback", window.location.origin);
-    const next = new URLSearchParams(window.location.search).get("next");
-    if (next && next.startsWith("/") && !next.startsWith("//")) {
-      callback.searchParams.set("next", next);
-    }
+    callback.searchParams.set("next", safeNext());
 
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithOAuth({
@@ -243,7 +247,7 @@ export default function LoginPage() {
       setError(signInError.message);
       return;
     }
-    router.push("/account/welcome?next=/floors");
+    router.push(`/account/welcome?next=${encodeURIComponent(safeNext())}`);
     router.refresh();
   }
 

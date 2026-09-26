@@ -8,7 +8,8 @@ export default async function WelcomePage({
   searchParams: Promise<{ next?: string }>;
 }) {
   const { next } = await searchParams;
-  const nextHref = next ?? "/floors";
+  const nextHref =
+    next && next.startsWith("/") && !next.startsWith("//") ? next : "/floors";
 
   const cookieStore = await cookies();
   const raw = cookieStore.get("sq_new_credentials")?.value;

@@ -3,6 +3,7 @@ import { getProfile } from "@/lib/auth";
 import { computeDashboardStats } from "@/lib/dashboardStats";
 import { computeStudyStats } from "@/lib/studyStats";
 import StatTile from "@/components/StatTile";
+import ScanQrButton from "@/components/ScanQrButton";
 import Heatmap from "@/components/Heatmap";
 import DistributionBars from "@/components/DistributionBars";
 import StudyTimer from "./StudyTimer";
@@ -55,6 +56,7 @@ export default async function DashboardPage() {
 
   return (
     <div>
+      <ScanQrButton className="mb-6" />
       <h1 className="mb-4 text-xl font-semibold">My dashboard</h1>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">

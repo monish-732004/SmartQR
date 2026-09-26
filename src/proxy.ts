@@ -52,15 +52,16 @@ export async function proxy(request: NextRequest) {
   if (!user && !isPublic) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
-    url.searchParams.set("next", request.nextUrl.pathname);
+    // Keep the query string too: a station link needs its ?sig= to be valid.
+    url.search = "";
+    url.searchParams.set("next", `${request.nextUrl.pathname}${request.nextUrl.search}`);
     return NextResponse.redirect(url);
   }
 
   if (user && request.nextUrl.pathname.startsWith("/login")) {
-    const url = request.nextUrl.clone();
-    url.pathname = request.nextUrl.searchParams.get("next") ?? "/floors";
-    url.search = "";
-    return NextResponse.redirect(url);
+    const next = request.nextUrl.searchParams.get("next");
+    const safe = next && next.startsWith("/") && !next.startsWith("//") ? next : "/floors";
+    return NextResponse.redirect(new URL(safe, request.url));
   }
 
   return response;
