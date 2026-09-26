@@ -26,15 +26,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col text-neutral-900">
-        {/* Post-login background (public/background.jpg), with a light wash so text and
-            cards stay readable. Fixed layer (not background-attachment) so
+        {/* Post-login background (public/background.jpg). Fixed layer (not background-attachment) so
             it also works on mobile browsers. */}
         <div
           aria-hidden
           className="fixed inset-0 -z-10 bg-cover bg-center"
           style={{
             backgroundImage:
-              "linear-gradient(rgba(255,255,255,0.6), rgba(255,255,255,0.6)), url(/background.jpg)",
+              "url(/background.jpg)",
           }}
         />
         <NavBar />
