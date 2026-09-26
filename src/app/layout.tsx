@@ -26,7 +26,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col text-neutral-900">
-        {/* Same photo as the login page, with a light wash so text and
+        {/* Post-login background (public/background.jpg), with a light wash so text and
             cards stay readable. Fixed layer (not background-attachment) so
             it also works on mobile browsers. */}
         <div
@@ -34,7 +34,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           className="fixed inset-0 -z-10 bg-cover bg-center"
           style={{
             backgroundImage:
-              "linear-gradient(rgba(255,255,255,0.78), rgba(255,255,255,0.78)), url(/ub.jpg)",
+              "linear-gradient(rgba(255,255,255,0.6), rgba(255,255,255,0.6)), url(/background.jpg)",
           }}
         />
         <NavBar />
