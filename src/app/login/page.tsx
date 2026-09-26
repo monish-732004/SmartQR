@@ -265,7 +265,9 @@ export default function LoginPage() {
       <div className="mx-auto mb-8 flex max-w-5xl items-center justify-between rounded-xl bg-white/80 px-4 py-3 shadow-sm backdrop-blur-md">
         <div className="flex items-center gap-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/logo.png" alt="SRM Institute of Science & Technology" className="h-8 w-auto" />
+          <img src="/srm_logo.png" alt="SRM Institute of Science & Technology" className="h-9 w-auto" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" alt="SmartPlug QR" className="h-8 w-auto" />
           <span className="font-mono text-sm font-semibold tracking-tight text-neutral-900">
             SmartPlug QR
           </span>
