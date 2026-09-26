@@ -26,18 +26,18 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col text-neutral-900">
-        {/* Post-login background (public/background.jpg). Fixed layer (not background-attachment) so
+        {/* Post-login background (public/background.jpg), dimmed with a dark tint. Fixed layer (not background-attachment) so
             it also works on mobile browsers. */}
         <div
           aria-hidden
           className="fixed inset-0 -z-10 bg-cover bg-center"
           style={{
             backgroundImage:
-              "url(/background.jpg)",
+              "linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(/background.jpg)",
           }}
         />
         <NavBar />
-        <main className="animate-fade-in mx-auto my-4 w-[calc(100%-1.5rem)] max-w-5xl flex-1 rounded-2xl bg-white/85 px-4 py-6 pb-24 shadow-sm backdrop-blur-md sm:my-6 sm:w-full sm:px-6 sm:pb-6">
+        <main className="animate-fade-in mx-auto w-full max-w-5xl flex-1 px-4 py-6 pb-24 sm:pb-6">
           {children}
         </main>
         <Footer />

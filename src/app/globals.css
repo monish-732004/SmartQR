@@ -132,3 +132,54 @@ body {
     animation: flash-highlight 1.4s ease-out;
   }
 }
+
+/*
+ * The post-login page background is a dimmed photo, so plain text that sits
+ * directly on it must be light. Anything inside a white/light card keeps its
+ * normal dark colors (the restore rules below come later and match deeper).
+ * Unlayered on purpose: it has to beat Tailwind's layered text utilities.
+ */
+main {
+  color: #f5f5f5;
+}
+main :is(.text-neutral-900, .text-neutral-800, .text-neutral-700) {
+  color: #ffffff;
+}
+main :is(.text-neutral-600, .text-neutral-500, .text-neutral-400) {
+  color: rgb(255 255 255 / 0.8);
+}
+main
+  :is(
+    .bg-white,
+    [class*="bg-white/"],
+    .bg-neutral-50,
+    .bg-neutral-100,
+    [class*="bg-violet-50"],
+    [class*="bg-sky-50"]
+  ) {
+  color: #171717;
+}
+main
+  :is(
+    .bg-white,
+    [class*="bg-white/"],
+    .bg-neutral-50,
+    .bg-neutral-100,
+    [class*="bg-violet-50"],
+    [class*="bg-sky-50"]
+  )
+  :is(.text-neutral-900, .text-neutral-800, .text-neutral-700) {
+  color: #171717;
+}
+main
+  :is(
+    .bg-white,
+    [class*="bg-white/"],
+    .bg-neutral-50,
+    .bg-neutral-100,
+    [class*="bg-violet-50"],
+    [class*="bg-sky-50"]
+  )
+  :is(.text-neutral-600, .text-neutral-500, .text-neutral-400) {
+  color: #737373;
+}
