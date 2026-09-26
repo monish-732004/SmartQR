@@ -86,7 +86,6 @@ export default async function NavBar() {
               <NavLink href="/librarian">Overview</NavLink>
               <NavLink href="/librarian/students">Students</NavLink>
               <NavLink href="/librarian/reports">Reports</NavLink>
-              <NavLink href="/librarian/analytics">Analytics</NavLink>
               <NavLink href="/librarian/qr-codes">QR codes</NavLink>
             </>
           )}

@@ -4,6 +4,8 @@ import { computeDashboardStats } from "@/lib/dashboardStats";
 import { computeStudyStats } from "@/lib/studyStats";
 import StatTile from "@/components/StatTile";
 import ScanQrButton from "@/components/ScanQrButton";
+import LiveRefresh from "@/components/LiveRefresh";
+import StudentAnalytics, { type HistoryRow } from "./StudentAnalytics";
 import Heatmap from "@/components/Heatmap";
 import DistributionBars from "@/components/DistributionBars";
 import StudyTimer from "./StudyTimer";
@@ -24,9 +26,21 @@ export default async function DashboardPage() {
 
   const { data: sessions } = await supabase
     .from("sessions")
-    .select("*")
+    .select("*, charging_points(code, floors(name))")
     .eq("user_id", user!.id)
     .order("started_at", { ascending: false });
+
+  type SessionWithPoint = Session & {
+    charging_points: { code: string; floors: { name: string } | null } | null;
+  };
+  const historyRows: HistoryRow[] = ((sessions as SessionWithPoint[]) ?? []).map((s) => ({
+    id: s.id,
+    code: s.charging_points?.code ?? "—",
+    floor: s.charging_points?.floors?.name ?? "",
+    purpose: s.purpose,
+    started_at: s.started_at,
+    ended_at: s.ended_at,
+  }));
 
   const stats = computeDashboardStats((sessions as Session[]) ?? []);
 
@@ -56,6 +70,7 @@ export default async function DashboardPage() {
 
   return (
     <div>
+      <LiveRefresh table="sessions" filter={`user_id=eq.${user!.id}`} />
       <ScanQrButton className="mb-6" />
       <h1 className="mb-4 text-xl font-semibold">My dashboard</h1>
 
@@ -97,6 +112,8 @@ export default async function DashboardPage() {
           }))}
         />
       </div>
+
+      <StudentAnalytics sessions={historyRows} />
 
       {/* Study & work — students only ----------------------------------- */}
       {isStudent && studyStats && (

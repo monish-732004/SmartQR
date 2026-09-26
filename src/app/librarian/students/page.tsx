@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import type { ChargingPoint, Profile, Session } from "@/lib/types";
 import StudentSessionRow from "./StudentSessionRow";
+import LiveRefresh from "@/components/LiveRefresh";
 
 function last24HoursCutoff(): string {
   return new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
@@ -31,6 +32,7 @@ export default async function StudentsPage() {
 
   return (
     <div>
+      <LiveRefresh table="sessions" />
       <h1 className="mb-2 text-xl font-semibold">Students</h1>
       <p className="mb-6 text-sm text-neutral-500">
         Everyone who has used a socket in the last 24 hours. Report a socket
