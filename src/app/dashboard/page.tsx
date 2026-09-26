@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
-import { getProfile } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import { getProfile, isAdmin, isStaff } from "@/lib/auth";
 import { computeDashboardStats } from "@/lib/dashboardStats";
 import { computeStudyStats } from "@/lib/studyStats";
 import StatTile from "@/components/StatTile";
@@ -20,6 +21,8 @@ import {
 export default async function DashboardPage() {
   const supabase = await createClient();
   const profile = await getProfile();
+  // Usage analytics are a student feature; staff have their own modules.
+  if (isStaff(profile)) redirect(isAdmin(profile) ? "/admin" : "/librarian");
   const {
     data: { user },
   } = await supabase.auth.getUser();

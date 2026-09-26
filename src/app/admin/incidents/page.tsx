@@ -81,18 +81,18 @@ export default async function IncidentsPage() {
 
   return (
     <div>
-      <h1 className="mb-2 text-xl font-semibold">Incident review</h1>
-      <p className="mb-6 text-sm text-neutral-500">
+      <h1 className="mb-2 text-3xl font-semibold">Incident review</h1>
+      <p className="mb-6 text-base text-neutral-500">
         Every librarian report lands here first. Nothing is ever applied to
         a student automatically — approve, reject, or resolve each one
         yourself, after checking their history below.
       </p>
 
-      <h2 className="mb-3 text-sm font-medium text-neutral-700">
+      <h2 className="mb-3 text-lg font-semibold text-neutral-700">
         Pending reports ({rows.length})
       </h2>
       {rows.length === 0 && (
-        <p className="mb-8 text-sm text-neutral-500">No pending reports.</p>
+        <p className="mb-8 text-base text-neutral-500">No pending reports.</p>
       )}
       <div className="mb-10 flex flex-col gap-3">
         {rows.map((r) => (
@@ -112,11 +112,11 @@ export default async function IncidentsPage() {
         ))}
       </div>
 
-      <h2 className="mb-3 text-sm font-medium text-neutral-700">
+      <h2 className="mb-3 text-lg font-semibold text-neutral-700">
         Active restrictions ({activeRestrictions.length})
       </h2>
       {activeRestrictions.length === 0 && (
-        <p className="text-sm text-neutral-500">No active restrictions.</p>
+        <p className="text-base text-neutral-500">No active restrictions.</p>
       )}
       <div className="flex flex-col gap-2">
         {activeRestrictions.map((r) => (

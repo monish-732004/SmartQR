@@ -28,15 +28,7 @@ export default async function QrCodesPage() {
 
   return (
     <div>
-      <h1 className="mb-2 text-xl font-semibold">QR codes</h1>
-      <p className="mb-6 text-sm text-neutral-500">
-        One QR code per socket — scanning one identifies that exact port
-        directly. Run{" "}
-        <code className="rounded bg-neutral-100 px-1">npm run qr:generate</code>{" "}
-        to (re)generate PNGs in{" "}
-        <code className="rounded bg-neutral-100 px-1">public/qr</code> — the
-        links below work for local testing even before you do.
-      </p>
+      <h1 className="mb-6 text-xl font-semibold">QR codes</h1>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {stations.map(([qrCode, ports]) => {
