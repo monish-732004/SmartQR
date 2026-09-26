@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Archivo_Black } from "next/font/google";
 import { createClient } from "@/lib/supabase/client";
@@ -115,13 +115,29 @@ const STEPS = [
 
 export default function LoginPage() {
   const router = useRouter();
-  const [mode, setMode] = useState<"link" | "password">("link");
+  const [mode, setMode] = useState<"password" | "signup">("password");
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">(
+  const [status, setStatus] = useState<"idle" | "sending" | "error">(
     "idle"
   );
   const [error, setError] = useState<string | null>(null);
   const domains = allowedDomainsLabel();
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [googleError, setGoogleError] = useState<string | null>(null);
+
+  // Surface failures from /auth/callback (wrong domain, cancelled Google sign-in, etc.)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const err = params.get("error");
+    if (!err) return;
+    /* eslint-disable react-hooks/set-state-in-effect -- URL is only readable client-side */
+    setGoogleError(
+      err === "domain"
+        ? `Please use your institutional email (${domains}).`
+        : `Sign-in failed: ${params.get("reason") ?? "please try again."}`
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [loginId, setLoginId] = useState(""); // email OR registration ID
   const [password, setPassword] = useState("");
@@ -161,7 +177,7 @@ export default function LoginPage() {
       setPwStatus("error");
       setPwError(
         error.message.includes("Invalid login credentials")
-          ? "Wrong credentials — or a password hasn't been set yet. Use the email link instead."
+          ? "Wrong credentials — or a password hasn't been set yet. Use Continue with Google or the New student tab."
           : error.message
       );
     } else {
@@ -170,36 +186,65 @@ export default function LoginPage() {
     }
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleGoogle() {
+    setGoogleLoading(true);
+    setGoogleError(null);
+
+    // Built from the current origin, so the same code works on localhost and
+    // on the Vercel deployment. Both callback URLs must be in Supabase's
+    // redirect allow-list.
+    const callback = new URL("/auth/callback", window.location.origin);
+    const next = new URLSearchParams(window.location.search).get("next");
+    if (next && next.startsWith("/") && !next.startsWith("//")) {
+      callback.searchParams.set("next", next);
+    }
+
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: callback.toString(),
+        queryParams: { prompt: "select_account" },
+      },
+    });
+
+    // On success the browser navigates to Google, so we only get here if
+    // starting the flow failed.
+    if (error) {
+      setGoogleLoading(false);
+      setGoogleError(error.message);
+    }
+  }
+
+  async function handleSignup(e: React.FormEvent) {
     e.preventDefault();
     setStatus("sending");
     setError(null);
 
-    const domainList = (process.env.NEXT_PUBLIC_ALLOWED_EMAIL_DOMAINS ?? "")
-      .split(",")
-      .map((d) => d.trim().toLowerCase())
-      .filter(Boolean);
-    const emailDomain = email.split("@")[1]?.toLowerCase();
-    if (domainList.length && !domainList.includes(emailDomain ?? "")) {
+    const res = await fetch("/api/student-signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) {
       setStatus("error");
-      setError(`Please use your institutional email (${domains}).`);
+      setError(json.error ?? "Sign-up failed.");
       return;
     }
 
     const supabase = createClient();
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      },
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: json.email,
+      password: json.password,
     });
-
-    if (error) {
+    if (signInError) {
       setStatus("error");
-      setError(error.message);
-    } else {
-      setStatus("sent");
+      setError(signInError.message);
+      return;
     }
+    router.push("/account/welcome?next=/floors");
+    router.refresh();
   }
 
   return (
@@ -340,8 +385,8 @@ export default function LoginPage() {
                 Sign in to SmartPlug
               </h2>
               <p className="mt-2 text-sm text-neutral-500">
-                {mode === "link"
-                  ? "Sign in with your institutional email to continue."
+                {mode === "signup"
+                  ? "First time here? Create your account with your institutional email."
                   : "Sign in with your login ID and password."}
               </p>
 
@@ -349,14 +394,14 @@ export default function LoginPage() {
                 <button
                   type="button"
                   suppressHydrationWarning
-                  onClick={() => setMode("link")}
+                  onClick={() => setMode("signup")}
                   className={`flex-1 rounded px-2 py-1.5 transition-colors ${
-                    mode === "link"
+                    mode === "signup"
                       ? "bg-white text-neutral-900 shadow-sm"
                       : "text-neutral-500 hover:text-neutral-700"
                   }`}
                 >
-                  Email link
+                  New student
                 </button>
                 <button
                   type="button"
@@ -372,39 +417,37 @@ export default function LoginPage() {
                 </button>
               </div>
 
-              {mode === "link" ? (
-                status === "sent" ? (
-                  <div className="animate-pop-in mt-6 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
-                    Check <strong>{email}</strong> for a sign-in link.
-                  </div>
-                ) : (
-                  <form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-3">
-                    <input
-                      type="email"
-                      required
-                      suppressHydrationWarning
-                      placeholder={
-                        domains ? `you${domains.split(",")[0]}` : "you@college.edu"
-                      }
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="rounded-md border border-neutral-300 px-3 py-2.5 text-sm text-neutral-900 outline-none transition-colors focus:border-violet-600 focus:ring-2 focus:ring-violet-100"
-                    />
-                    <button
-                      type="submit"
-                      disabled={status === "sending"}
-                      suppressHydrationWarning
-                      className="rounded-md bg-neutral-900 px-3 py-2.5 text-sm font-medium text-white transition-colors hover:bg-violet-700 disabled:opacity-50"
-                    >
-                      {status === "sending" ? "Sending link…" : "Send sign-in link →"}
-                    </button>
-                    {error && (
-                      <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
-                        {error}
-                      </p>
-                    )}
-                  </form>
-                )
+              {mode === "signup" ? (
+                <form onSubmit={handleSignup} className="mt-4 flex flex-col gap-3">
+                  <input
+                    type="email"
+                    required
+                    suppressHydrationWarning
+                    placeholder={
+                      domains ? `you${domains.split(",")[0]}` : "you@college.edu"
+                    }
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="rounded-md border border-neutral-300 px-3 py-2.5 text-sm text-neutral-900 outline-none transition-colors focus:border-violet-600 focus:ring-2 focus:ring-violet-100"
+                  />
+                  <button
+                    type="submit"
+                    disabled={status === "sending"}
+                    suppressHydrationWarning
+                    className="rounded-md bg-neutral-900 px-3 py-2.5 text-sm font-medium text-white transition-colors hover:bg-violet-700 disabled:opacity-50"
+                  >
+                    {status === "sending" ? "Creating account…" : "Create my account →"}
+                  </button>
+                  {error && (
+                    <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+                      {error}
+                    </p>
+                  )}
+                  <p className="text-xs text-neutral-400">
+                    No email is sent. You&apos;ll get a login ID and password on
+                    the next screen — save them.
+                  </p>
+                </form>
               ) : (
                 <form onSubmit={handlePasswordSubmit} className="mt-4 flex flex-col gap-3">
                   <input
@@ -447,12 +490,38 @@ export default function LoginPage() {
                     </p>
                   )}
                   <p className="text-xs text-neutral-400">
-                    No password yet? Sign in with the email link once —
+                    New here? Use the New student tab or Continue with Google —
                     we&apos;ll show you a login ID and password to use from
                     then on (staff can also set their own from the account
                     menu).
                   </p>
                 </form>
+              )}
+
+              <div className="mt-5 flex items-center gap-3 font-mono text-[10px] uppercase tracking-wider text-neutral-400">
+                <span className="h-px flex-1 bg-neutral-200" />
+                or
+                <span className="h-px flex-1 bg-neutral-200" />
+              </div>
+              <button
+                type="button"
+                onClick={handleGoogle}
+                disabled={googleLoading}
+                suppressHydrationWarning
+                className="mt-4 flex w-full items-center justify-center gap-2.5 rounded-md border border-neutral-300 bg-white px-3 py-2.5 text-sm font-medium text-neutral-800 transition-colors hover:bg-neutral-50 disabled:opacity-50"
+              >
+                <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden>
+                  <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z" />
+                  <path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.6 5.9c4.4-4.1 7-10.1 7-17.6z" />
+                  <path fill="#FBBC05" d="M10.5 28.7c-.5-1.5-.8-3-.8-4.7s.3-3.2.8-4.7l-7.9-6.1C.9 16.4 0 20.1 0 24s.9 7.6 2.6 10.8l7.9-6.1z" />
+                  <path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.6-5.9c-2.1 1.4-4.9 2.3-8.3 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z" />
+                </svg>
+                {googleLoading ? "Redirecting to Google…" : "Continue with Google"}
+              </button>
+              {googleError && (
+                <p className="mt-3 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+                  {googleError}
+                </p>
               )}
 
               <p className="mt-5 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-neutral-400">

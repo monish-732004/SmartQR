@@ -4,8 +4,8 @@ import SetPasswordForm from "./SetPasswordForm";
 
 export default async function SetPasswordPage() {
   const profile = await getProfile();
-  if (!isStaff(profile)) redirect("/floors");
-  const landingHref = isAdmin(profile) ? "/admin" : "/librarian";
+  if (!profile) redirect("/login");
+  const landingHref = isAdmin(profile) ? "/admin" : isStaff(profile) ? "/librarian" : "/floors";
 
   return (
     <div className="mx-auto max-w-sm">
