@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { getProfile, isAdmin } from "@/lib/auth";
-import { buildStationUrl } from "@/lib/qr";
+import { buildStationUrl, getRequestOrigin } from "@/lib/qr";
 import type { ChargingPoint } from "@/lib/types";
 import { QrImage } from "./qr-image";
 
@@ -13,7 +13,9 @@ export default async function QrCodesPage() {
   if (scopedFloorId) query = query.eq("floor_id", scopedFloorId);
   const { data: points } = await query;
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  // Was falling back to NEXT_PUBLIC_APP_URL (localhost in prod when that
+  // wasn't set on the deployment) — now derived from the actual request.
+  const appUrl = await getRequestOrigin();
 
   const byQrCode = new Map<
     string,

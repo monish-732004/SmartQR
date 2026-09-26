@@ -151,30 +151,39 @@ export default function LoginPage() {
   const [pwStatus, setPwStatus] = useState<"idle" | "sending" | "error">("idle");
   const [pwError, setPwError] = useState<string | null>(null);
 
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotId, setForgotId] = useState("");
+  const [forgotStatus, setForgotStatus] = useState<"idle" | "sending" | "sent" | "error">(
+    "idle"
+  );
+  const [forgotError, setForgotError] = useState<string | null>(null);
+
+  // Email or registration ID -> email. Supabase's password APIs only take
+  // an email, so both sign-in and password reset resolve through this.
+  async function resolveEmail(idOrEmail: string): Promise<string | null> {
+    const trimmed = idOrEmail.trim();
+    if (trimmed.includes("@")) return trimmed;
+
+    const supabase = createClient();
+    const { data, error } = await supabase.rpc("email_for_registration_id", {
+      p_registration_id: trimmed,
+    });
+    return error || !data ? null : data;
+  }
+
   async function handlePasswordSubmit(e: React.FormEvent) {
     e.preventDefault();
     setPwStatus("sending");
     setPwError(null);
 
-    const supabase = createClient();
-    let resolvedEmail = loginId.trim();
-
-    // Not an email? Treat it as a registration ID and resolve it to the
-    // account's email first — Supabase's password sign-in only takes an
-    // email, so this happens before we can call it.
-    if (!resolvedEmail.includes("@")) {
-      const { data, error: lookupError } = await supabase.rpc(
-        "email_for_registration_id",
-        { p_registration_id: resolvedEmail }
-      );
-      if (lookupError || !data) {
-        setPwStatus("error");
-        setPwError("No account found for that registration ID.");
-        return;
-      }
-      resolvedEmail = data;
+    const resolvedEmail = await resolveEmail(loginId);
+    if (!resolvedEmail) {
+      setPwStatus("error");
+      setPwError("No account found for that registration ID.");
+      return;
     }
 
+    const supabase = createClient();
     const { error } = await supabase.auth.signInWithPassword({
       email: resolvedEmail,
       password,
@@ -190,6 +199,37 @@ export default function LoginPage() {
     } else {
       router.push(safeNext());
       router.refresh();
+    }
+  }
+
+  async function handleForgotPassword() {
+    setForgotStatus("sending");
+    setForgotError(null);
+
+    const resolvedEmail = await resolveEmail(forgotId);
+    if (!resolvedEmail) {
+      // Same generic outcome as a real match below — don't reveal whether
+      // an account exists for a given email/ID.
+      setForgotStatus("sent");
+      return;
+    }
+
+    const supabase = createClient();
+    const callback = new URL("/auth/callback", window.location.origin);
+    callback.searchParams.set("next", "/account/set-password");
+
+    const { error } = await supabase.auth.resetPasswordForEmail(resolvedEmail, {
+      redirectTo: callback.toString(),
+    });
+
+    // resetPasswordForEmail itself doesn't reveal whether the address is
+    // registered, so an error here is a real delivery/config failure, not
+    // "not found" — surface it rather than swallowing it.
+    if (error) {
+      setForgotStatus("error");
+      setForgotError(error.message);
+    } else {
+      setForgotStatus("sent");
     }
   }
 
@@ -493,6 +533,60 @@ export default function LoginPage() {
                       {pwError}
                     </p>
                   )}
+
+                  {!showForgot ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowForgot(true);
+                        setForgotId(loginId.includes("@") ? loginId : "");
+                        setForgotStatus("idle");
+                        setForgotError(null);
+                      }}
+                      className="self-start text-xs text-violet-700 underline hover:text-violet-900"
+                    >
+                      Forgot password?
+                    </button>
+                  ) : forgotStatus === "sent" ? (
+                    <p className="rounded-md bg-emerald-50 px-3 py-2 text-xs text-emerald-800">
+                      If that account has an email on file, a reset link is on
+                      its way — check your inbox (and spam folder).
+                    </p>
+                  ) : (
+                    <div className="rounded-md border border-neutral-200 p-3">
+                      <p className="mb-2 text-xs text-neutral-500">
+                        Enter your email or registration ID — we&apos;ll email a
+                        reset link if we find a match.
+                      </p>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          required
+                          suppressHydrationWarning
+                          autoCapitalize="none"
+                          autoCorrect="off"
+                          spellCheck={false}
+                          placeholder="Email or registration ID"
+                          value={forgotId}
+                          onChange={(e) => setForgotId(e.target.value)}
+                          className="min-w-0 flex-1 rounded-md border border-neutral-300 px-2.5 py-1.5 text-xs text-neutral-900 outline-none transition-colors focus:border-violet-600 focus:ring-2 focus:ring-violet-100"
+                        />
+                        <button
+                          type="button"
+                          disabled={forgotStatus === "sending" || !forgotId.trim()}
+                          onClick={handleForgotPassword}
+                          suppressHydrationWarning
+                          className="whitespace-nowrap rounded-md bg-neutral-900 px-2.5 py-1.5 text-xs font-medium text-white transition-colors hover:bg-violet-700 disabled:opacity-50"
+                        >
+                          {forgotStatus === "sending" ? "Sending…" : "Send reset link"}
+                        </button>
+                      </div>
+                      {forgotError && (
+                        <p className="mt-2 text-xs text-red-600">{forgotError}</p>
+                      )}
+                    </div>
+                  )}
+
                   <p className="text-xs text-neutral-400">
                     New here? Use the New student tab or Continue with Google —
                     we&apos;ll show you a login ID and password to use from

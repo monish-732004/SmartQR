@@ -36,6 +36,7 @@ export default function PortPanel({
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [reportSent, setReportSent] = useState(false);
+  const [locating, setLocating] = useState(false);
 
   // point.availability_status is the live-synced signal (it updates via
   // realtime even when portActiveSession — fetched once at page load —
@@ -56,6 +57,38 @@ export default function PortPanel({
       : occupied
         ? "border-l-neutral-300"
         : "border-l-emerald-400";
+
+  // Starting a session needs the phone's location so the server can confirm
+  // the student is at the library (not scanning a photo of the QR from home).
+  function startWithLocation() {
+    setError(null);
+    if (!navigator.geolocation) {
+      setError("This browser can't share its location, so we can't confirm you're at the library.");
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setLocating(false);
+        run(() =>
+          startSession(point.id, qrCode, purpose, {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+            accuracy: pos.coords.accuracy,
+          })
+        );
+      },
+      (err) => {
+        setLocating(false);
+        setError(
+          err.code === err.PERMISSION_DENIED
+            ? "Location access is blocked. Allow location for this site in your browser settings, then try again."
+            : "Couldn't get your location. Move somewhere with a better signal and try again."
+        );
+      },
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
+    );
+  }
 
   function run(action: () => Promise<{ ok: boolean; message?: string }>) {
     setError(null);
@@ -150,11 +183,15 @@ export default function PortPanel({
               ))}
             </select>
             <button
-              disabled={pending}
-              onClick={() => run(() => startSession(point.id, qrCode, purpose))}
+              disabled={pending || locating}
+              onClick={startWithLocation}
               className="rounded-md bg-gradient-to-r from-violet-600 to-fuchsia-500 px-3 py-2 text-sm font-medium text-white shadow-sm transition-transform duration-150 hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100"
             >
-              {pending ? "Marking occupied…" : "🔌 Mark Occupied (Start Charging)"}
+              {locating
+                ? "Checking your location…"
+                : pending
+                  ? "Marking occupied…"
+                  : "🔌 Mark Occupied (Start Charging)"}
             </button>
           </div>
         )}

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { checkAtLibrary, type ClientLocation } from "@/lib/geofence";
 import type { FaultIssueType, SessionPurpose } from "@/lib/types";
 
 export type ActionResult = { ok: true } | { ok: false; message: string };
@@ -25,8 +26,12 @@ function revalidateEverywhere(qrCode: string) {
 export async function startSession(
   pointId: string,
   qrCode: string,
-  purpose: SessionPurpose
+  purpose: SessionPurpose,
+  location?: ClientLocation | null
 ): Promise<ActionResult> {
+  const geo = checkAtLibrary(location);
+  if (!geo.ok) return { ok: false, message: geo.message };
+
   const supabase = await createClient();
   const { error } = await supabase.rpc("start_charging_session", {
     p_point_id: pointId,
