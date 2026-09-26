@@ -37,7 +37,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           }}
         />
         <NavBar />
-        <main className="animate-fade-in mx-auto w-full max-w-5xl flex-1 px-4 py-6 pb-24 sm:pb-6">
+        <main className="animate-fade-in mx-auto my-4 w-[calc(100%-1.5rem)] max-w-5xl flex-1 rounded-2xl bg-white/85 px-4 py-6 pb-24 shadow-sm backdrop-blur-md sm:my-6 sm:w-full sm:px-6 sm:pb-6">
           {children}
         </main>
         <Footer />
